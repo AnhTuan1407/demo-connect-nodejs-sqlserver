@@ -1,5 +1,6 @@
 const { getAllUsers } = require('../services/user');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const db = require('../models/index');
 const initialModelSqlServer = require('../models/initial-models');
@@ -65,24 +66,35 @@ class UserController {
     async doLogin(req, res, next) {
         const data = req.body;
 
-        const result = await models.USER.findOne({
+        const user = await models.USER.findOne({
             where: { USERNAME: data.username }
         });
 
-        if (result) {
-            const comparePassword = await bcrypt.compare(data.password, result.PASSWORD);
+        const role = await models.ROLE.findOne({
+            where: { ROLE_ID: user.ROLE_ID }
+        });
+
+        if (user) {
+            const comparePassword = await bcrypt.compare(data.password, user.PASSWORD);
             if (!comparePassword) {
-                req.flash("error", `Mật khẩu không đúng!`)
+                req.flash("error", `Mật khẩu không đúng!`);
                 res.redirect("back");
                 return;
             }
 
-            res.cookie('tokeUser', data.TOKEN_USER);
-            res.send('Đăng nhập thành công');
+            // Tạo token với JWT
+            const token = jwt.sign({ userId: user.USER_ID, role: role.NAME }, 'secret_key', { expiresIn: '1h' });
+
+            // Lưu token vào cookie
+            res.cookie('tokenUser', token); // Sử dụng httpOnly và secure cho bảo mật
+            console.log('>>> Token: ', token);
+
+            // Trả về phản hồi
+            res.json({ message: 'Login successful', token });
             return;
         }
 
-        req.flash("error", `Không có username này!`)
+        req.flash("error", `Không có username này!`);
         res.redirect("back");
     }
 }

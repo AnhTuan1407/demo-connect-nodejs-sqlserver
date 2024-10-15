@@ -1,5 +1,6 @@
 const product = require('./product');
 const user = require('./user');
+const role = require('./role');
 const site = require('./site');
 
 function router(app) {
@@ -7,7 +8,10 @@ function router(app) {
 
     app.use('/users', user);
 
+    app.use('/roles', role);
+
     app.use('/', site);
+
 }
 
 module.exports = router;

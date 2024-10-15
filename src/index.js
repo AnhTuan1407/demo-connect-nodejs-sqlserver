@@ -7,10 +7,13 @@ const path = require('path');
 const morgan = require('morgan');
 const { engine } = require('express-handlebars');
 const router = require('./route/index');
+const cookieParser = require('cookie-parser');
 
 
+// Sử dụng cookie-parser middleware
+app.use(cookieParser());
 
-//Middle ware
+//Middleware
 const userMiddleware = require('./client/user-middleware');
 
 //express-flash để hiển thị thông báo
